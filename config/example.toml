@@ -1,0 +1,2 @@
+timeout_seconds = 3.0
+poll_interval_ms = 25
