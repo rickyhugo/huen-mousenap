@@ -7,7 +7,7 @@ Park the pointer in the middle of a terminal and it sits right over the one char
 ## Requirements
 
 - macOS 14 or newer
-- Zig 0.17.1 and `mise`
+- Zig 0.17.x (`mise` installs `0.17.1`)
 
 ## Install
 
