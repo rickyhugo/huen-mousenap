@@ -2,6 +2,8 @@
 
 `huen-mousenap` hides the macOS mouse cursor after an idle timeout and shows it again on mouse movement.
 
+Park the pointer in the middle of a terminal and it sits right over the one character you are trying to read. Every real mouse knows better and curls up out of sight the moment nobody is looking. `huen-mousenap` gives your cursor the same manners, putting it down for a nap until you nudge it again.
+
 ## Requirements
 
 - macOS 14 or newer
