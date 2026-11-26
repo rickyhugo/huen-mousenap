@@ -16,12 +16,14 @@ pub const Overrides = struct {
 };
 
 pub const Error = error{
+    DuplicateKey,
     UnknownKey,
     WrongType,
     InvalidTimeout,
     InvalidPollInterval,
     FileNotFound,
     ReadFailed,
+    OutOfMemory,
 } || toml.Error;
 
 pub fn defaultPath(allocator: std.mem.Allocator, environ_map: *const std.process.Environ.Map) !?[]u8 {
@@ -38,25 +40,30 @@ pub fn defaultPath(allocator: std.mem.Allocator, environ_map: *const std.process
     return null;
 }
 
-pub fn parse(allocator: std.mem.Allocator, source: []const u8) Error!Settings {
-    var doc = try toml.parse(allocator, source);
-    defer doc.deinit();
-
+pub fn parse(source: []const u8) Error!Settings {
+    var entries = toml.Iterator.init(source);
     var settings: Settings = .{};
-    for (doc.entries) |entry| {
+    var seen_timeout = false;
+    var seen_poll = false;
+
+    while (try entries.next()) |entry| {
         if (std.mem.eql(u8, entry.key, "timeout_seconds")) {
+            if (seen_timeout) return error.DuplicateKey;
+            seen_timeout = true;
             const timeout_sec: f64 = switch (entry.value) {
                 .float => |val| val,
                 .integer => |val| @floatFromInt(val),
-                else => return error.WrongType,
+                .non_numeric => return error.WrongType,
             };
             settings.timeout_ns = try timeoutSecondsToNs(timeout_sec);
             continue;
         }
         if (std.mem.eql(u8, entry.key, "poll_interval_ms")) {
+            if (seen_poll) return error.DuplicateKey;
+            seen_poll = true;
             const poll_ms: i64 = switch (entry.value) {
                 .integer => |val| val,
-                else => return error.WrongType,
+                .float, .non_numeric => return error.WrongType,
             };
             if (poll_ms < 0) return error.InvalidPollInterval;
             settings.poll_interval_ns = try pollIntervalMsToNs(@intCast(poll_ms));
@@ -83,7 +90,7 @@ pub fn load(
             else => return error.ReadFailed,
         };
         defer allocator.free(bytes);
-        settings = try parse(allocator, bytes);
+        settings = try parse(bytes);
     } else if (try defaultPath(allocator, environ_map)) |resolved_path| {
         defer allocator.free(resolved_path);
         const maybe_bytes = readConfigFile(allocator, io, resolved_path) catch |err| switch (err) {
@@ -92,7 +99,7 @@ pub fn load(
         };
         if (maybe_bytes) |bytes| {
             defer allocator.free(bytes);
-            settings = try parse(allocator, bytes);
+            settings = try parse(bytes);
         }
     }
 

@@ -1,6 +1,8 @@
 const std = @import("std");
+const build_options = @import("build_options");
+const config = @import("config.zig");
 
-pub const version_text = "huen-mousenap 0.1.0\n";
+pub const version_text = "huen-mousenap " ++ build_options.version ++ "\n";
 
 pub const usage_text =
     \\Usage:
@@ -21,8 +23,7 @@ pub const usage_text =
 
 pub const ConfigOptions = struct {
     config_path: ?[]const u8 = null,
-    timeout_seconds: ?f64 = null,
-    poll_interval_ms: ?u64 = null,
+    overrides: config.Overrides = .{},
 };
 
 pub const RunOptions = struct {
@@ -113,7 +114,7 @@ fn parseOptions(args: []const [:0]const u8, is_run: bool) ParseResult {
             const parsed = std.fmt.parseFloat(f64, args[index]) catch {
                 return .{ .err = .{ .kind = error.InvalidNumber, .detail = args[index] } };
             };
-            options.config.timeout_seconds = parsed;
+            options.config.overrides.timeout_seconds = parsed;
             continue;
         }
         if (std.mem.eql(u8, arg, "--poll-interval")) {
@@ -124,7 +125,7 @@ fn parseOptions(args: []const [:0]const u8, is_run: bool) ParseResult {
             const parsed = std.fmt.parseInt(u64, args[index], 10) catch {
                 return .{ .err = .{ .kind = error.InvalidNumber, .detail = args[index] } };
             };
-            options.config.poll_interval_ms = parsed;
+            options.config.overrides.poll_interval_ms = parsed;
             continue;
         }
         if (is_run and std.mem.eql(u8, arg, "--print-state")) {

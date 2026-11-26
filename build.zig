@@ -17,12 +17,16 @@ pub fn build(builder: *std.Build) void {
     const optimize = builder.standardOptimizeOption(.{});
     const sdk = std.mem.trim(u8, builder.run(&.{ "xcrun", "--sdk", "macosx", "--show-sdk-path" }), "\r\n");
 
+    const app_options = builder.addOptions();
+    app_options.addOption([]const u8, "version", @import("build.zig.zon").version);
+
     const module = builder.createModule(.{
         .root_source_file = builder.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
+    module.addOptions("build_options", app_options);
     module.addSystemFrameworkPath(.{ .cwd_relative = builder.fmt("{s}/System/Library/Frameworks", .{sdk}) });
     module.addSystemIncludePath(.{ .cwd_relative = builder.fmt("{s}/usr/include", .{sdk}) });
     module.addLibraryPath(.{ .cwd_relative = builder.fmt("{s}/usr/lib", .{sdk}) });

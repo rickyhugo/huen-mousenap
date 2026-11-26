@@ -96,10 +96,7 @@ pub fn main(init: std.process.Init) u8 {
                 init.io,
                 init.environ_map,
                 opts.config_path,
-                .{
-                    .timeout_seconds = opts.timeout_seconds,
-                    .poll_interval_ms = opts.poll_interval_ms,
-                },
+                opts.overrides,
             ) catch |err| {
                 writeConfigError(init.io, err);
                 return 1;
@@ -111,16 +108,12 @@ pub fn main(init: std.process.Init) u8 {
             return 0;
         },
         .run => |opts| {
-            const overrides: config.Overrides = .{
-                .timeout_seconds = opts.config.timeout_seconds,
-                .poll_interval_ms = opts.config.poll_interval_ms,
-            };
             const initial_settings = config.load(
                 init.gpa,
                 init.io,
                 init.environ_map,
                 opts.config.config_path,
-                overrides,
+                opts.config.overrides,
             ) catch |err| {
                 writeConfigError(init.io, err);
                 return 1;
@@ -137,7 +130,7 @@ pub fn main(init: std.process.Init) u8 {
                 .io = init.io,
                 .environ_map = init.environ_map,
                 .config_path = opts.config.config_path,
-                .overrides = overrides,
+                .overrides = opts.config.overrides,
                 .print_state = opts.print_state,
             };
 
@@ -172,7 +165,6 @@ fn writeConfigError(io: std.Io, err: config.Error) void {
         error.DuplicateKey => "error: duplicate key in config\n",
         error.InvalidNumber => "error: invalid number in config\n",
         error.UnterminatedString => "error: unterminated string in config\n",
-        error.InvalidEscape => "error: invalid string escape in config\n",
         error.UnknownKey => "error: unknown config key\n",
         error.WrongType => "error: wrong value type in config\n",
         error.InvalidTimeout => "error: timeout_seconds must be > 0 and <= 86400\n",
