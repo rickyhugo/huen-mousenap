@@ -1,0 +1,7 @@
+.{
+    .name = .huen_mousenap,
+    .fingerprint = 0x15f47c819169c5eb,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.17.0",
+    .paths = .{ "build.zig", "build.zig.zon", "src", "config", "LICENSE" },
+}

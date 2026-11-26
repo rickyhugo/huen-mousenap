@@ -1,0 +1,29 @@
+[tools]
+zig = "0.17.1"
+hk = "2.9.0"
+pkl = "0.32.2"
+lua = "5.5.1"
+
+[tasks.build]
+description = "Build huen-mousenap"
+run = "zig build"
+
+[tasks.test]
+description = "Run runner seam tests"
+run = "zig build test"
+
+[tasks.smoke]
+description = "Run CLI seam smoke tests"
+run = "zig build smoke"
+
+[tasks.check]
+description = "Check source formatting, names, and Lua syntax"
+run = "hk check --all"
+
+[tasks.fmt]
+description = "Format Zig sources and check names"
+run = "hk fix --all"
+
+[tasks.install]
+description = "Build and install huen-mousenap into ~/.local"
+run = 'zig build -Doptimize=ReleaseSafe --prefix "$HOME/.local"'
