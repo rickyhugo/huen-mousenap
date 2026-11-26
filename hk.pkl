@@ -1,4 +1,5 @@
 amends "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Builtins.pkl"
 
 min_hk_version = "2.9.0"
 
@@ -13,11 +14,7 @@ hooks {
   }
   ["commit-msg"] {
     steps {
-      ["conventional-commit"] {
-        check = new Command {
-          argv = List("mise", "exec", "--", "lua", "scripts/check-commit-message.lua", "{{commit_msg_file}}")
-        }
-      }
+      ["conventional-commit"] = Builtins.check_conventional_commit
     }
   }
 }
@@ -33,6 +30,10 @@ steps {
   ["names"] {
     glob = List("*.zig", "*.lua")
     check = "mise exec -- lua scripts/check-names.lua {{files}}"
+  }
+  ["no-src-tests"] {
+    glob = "src/**/*.zig"
+    check = "sh -c 'if grep -En \"^[[:space:]]*test[[:space:]]\" \"$@\"; then echo \"Tests belong only in tests/runner.zig or tests/cli.zig\" >&2; exit 1; fi' _ {{files}}"
   }
   ["lua-syntax"] {
     glob = "*.lua"
