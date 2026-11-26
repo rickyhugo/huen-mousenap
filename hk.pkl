@@ -1,7 +1,7 @@
-amends "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
-min_hk_version = "2.9.0"
+min_hk_version = "2.12.0"
 
 hooks {
   ["pre-commit"] {
@@ -22,6 +22,10 @@ hooks {
 exclude = List("vendor", "vendored", "third_party", "third-party", ".zig-cache", "zig-out", "zig-pkg")
 
 steps {
+  ["hk-config"] {
+    glob = List("hk.pkl", "mise.toml")
+    check = "hk validate --deny-warnings"
+  }
   ["zig-fmt"] {
     glob = "*.zig"
     check = "mise exec -- zig fmt --check {{files}}"
